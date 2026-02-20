@@ -1,0 +1,1337 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聯合航空加油單計算</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "PingFang TC", "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 15px;
+            background-color: #f5f5f5;
+            color: #333;
+            font-size: 14px;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 10px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        .title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 15px;
+            background-color: #e6f2ff;
+        }
+        .section-title {
+            background-color: #f0f8ff;
+            font-weight: bold;
+            padding: 10px;
+        }
+        .input-cell {
+            background-color: #ffffcc;
+        }
+        .formula-cell {
+            background-color: #e6ffe6;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            border: 1px solid #ccc;
+            padding: 5px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        .note {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+        }
+        .rounding-label {
+            font-size: 12px;
+            font-weight: normal;
+            color: #666;
+        }
+        
+        /* 新的免責聲明樣式 */
+        .disclaimer-container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #e74c3c;
+            max-width: 100%;
+        }
+        
+        .disclaimer-title {
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #e74c3c;
+            font-size: 1.1em;
+        }
+        
+        .disclaimer-content {
+            font-size: 0.9em;
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .disclaimer-content p {
+            margin-bottom: 10px;
+            text-align: justify;
+        }
+        
+        .disclaimer-content p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* KHH說明樣式 - 字體放大並加粗 */
+        .khh-note {
+            background-color: #e6f2ff;
+            border-left: 4px solid #4d94ff;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 16px; /* 放大兩號 */
+            line-height: 1.5;
+            font-weight: bold; /* 添加粗體 */
+        }
+        
+        /* 底部三行特殊處理 */
+        .bottom-rows {
+            font-size: 13px;
+        }
+        .bottom-rows td {
+            padding: 6px 8px;
+        }
+        .bottom-rows td:first-child {
+            min-width: 160px;
+        }
+        .bottom-rows .formula-cell {
+            min-width: 80px;
+        }
+        
+        /* 油車車牌號備註樣式 */
+        .truck-note {
+            background-color: #e6ffe6; /* 綠色背景 */
+        }
+        
+        /* 新增的檢查項目樣式 */
+        .check-item {
+            font-size: 12px;
+            text-align: center;
+            background-color: #fff9e6;
+            padding: 8px;
+            font-style: italic;
+        }
+        
+        /* 實際加油量計算的特殊排版 */
+        .actual-fuel-row td {
+            vertical-align: middle;
+        }
+        .actual-fuel-row .note {
+            background-color: #f9f9f9;
+        }
+        
+        /* 新增標題樣式 */
+        .subtitle {
+            text-align: center;
+            font-weight: bold;
+            padding: 8px;
+            background-color: #e6f2ff;
+        }
+        
+        /* 簽名行樣式 */
+        .signature-row td {
+            padding: 8px 10px;
+            vertical-align: middle;
+        }
+        
+        /* 綠色單元格樣式 */
+        .green-cell {
+            background-color: #e6ffe6;
+        }
+        
+        /* 備註行樣式 */
+        .remarks-row td {
+            padding: 8px 10px;
+            font-weight: bold;
+        }
+        
+        /* 藍色空格行樣式 */
+        .blue-row {
+            background-color: #e6f2ff;
+            height: 60px; /* 增加高度 */
+        }
+        .blue-row td {
+            border: 1px solid #b3d9ff;
+        }
+        
+        /* 粉紅色空格行樣式 - 改為30px高度 */
+        .pink-row-space {
+            background-color: #ffcccc;
+            height: 30px; /* 從60px改為30px */
+        }
+        .pink-row-space td {
+            border: 1px solid #ff9999;
+        }
+        
+        /* 藍色空格行樣式 - 正常高度 */
+        .blue-row-normal {
+            background-color: #e6f2ff;
+            height: 30px; /* 正常高度 */
+        }
+        .blue-row-normal td {
+            border: 1px solid #b3d9ff;
+        }
+        
+        /* 黃色行樣式 */
+        .yellow-row {
+            background-color: #ffffcc;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        /* FUEL DISTRIBUTION 表格向右移動的樣式 */
+        .fuel-distribution td:first-child {
+            width: auto; /* 修改为自动宽度 */
+            border: 1px solid #ddd; /* 添加边框 */
+            background-color: #e6f2ff; /* 添加蓝色背景 */
+        }
+        
+        /* TRUCK 行樣式 */
+        .truck-row td {
+            padding: 6px 8px;
+        }
+        
+        /* 藍色單元格樣式 */
+        .blue-cell {
+            background-color: #e6f2ff;
+        }
+        
+        /* 粉紅色行樣式 */
+        .pink-row {
+            background-color: #ffcccc;
+        }
+        .pink-row td {
+            font-weight: bold;
+        }
+        
+        /* 加號單元格樣式 */
+        .plus-cell {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        /* 新增的辅助计算单元格样式 - 粉红色 */
+        .assistant-cell {
+            background-color: #ffcccc; /* 粉红色背景 */
+            font-size: 12px;
+            line-height: 1.3;
+            vertical-align: middle;
+            text-align: center;
+            font-weight: bold;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            width: 30px;
+        }
+        
+        /* 新增的蓝色左侧单元格样式 */
+        .blue-left {
+            background-color: #e6f2ff;
+        }
+        
+        /* 新添加的中文说明单元格样式 */
+        .chinese-note {
+            font-size: 12px;
+            text-align: center;
+            background-color: #e6f2ff;
+            vertical-align: middle;
+            border: 1px solid #ddd; /* 确保有边框 */
+        }
+        
+        /* 合并的绿色单元格样式 */
+        .tolerance-merged {
+            background-color: #e6ffe6;
+            font-weight: bold;
+        }
+        
+        /* 加油预估时间样式 */
+        .fuel-time-container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #4CAF50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .button-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .start-fuel-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .start-fuel-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .lock-button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+        
+        .lock-button:hover {
+            background-color: #0b7dda;
+        }
+        
+        .unlock-button {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+        
+        .unlock-button:hover {
+            background-color: #e68a00;
+        }
+        
+        .status-button {
+            background-color: #90EE90;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: default;
+        }
+        
+        .fuel-estimation {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            flex-grow: 1;
+            text-align: right;
+        }
+        
+        .fuel-estimation span {
+            color: #e74c3c;
+            display: block;
+            margin-top: 5px;
+            font-size: 18px;
+        }
+        
+        /* 新增：确保藍色單元格显示为蓝色 */
+        .actual-fuel-row td:first-child {
+            background-color: #e6f2ff !important;
+            border: 1px solid #b3d9ff !important;
+            font-weight: bold;
+        }
+        
+        /* 平板和桌面设备上的辅助计算单元格样式 */
+        @media (min-width: 769px) {
+            .assistant-cell {
+                writing-mode: horizontal-tb;
+                text-orientation: mixed;
+                width: auto;
+                height: auto;
+                padding: 8px 10px;
+                text-align: center;
+                white-space: normal;
+            }
+        }
+        
+        /* 員工號輸入行樣式 */
+        .employee-input-row {
+            background-color: #ffcccc;
+        }
+        .employee-input-row td {
+            padding: 8px 10px;
+        }
+        .employee-input-row .input-cell {
+            background-color: #ffcccc; /* 单元格背景为粉红色 */
+        }
+        
+        /* 簽名行顯示區域樣式 */
+        .display-cell {
+            background-color: #e6ffe6;
+            font-weight: bold;
+            padding: 5px 10px;
+            color: #333;
+        }
+        
+        /* 提示文字樣式 */
+        .hint-text {
+            color: #999;
+            font-style: italic;
+        }
+        
+        /* 下拉式選單樣式 - 修正 */
+        #employee-id-select {
+            width: 100%;
+            min-width: 250px;
+            background-color: white; /* 下拉框背景為白色 */
+        }
+        
+        /* 確保下拉選項的背景為白色 */
+        #employee-id-select option {
+            background-color: white;
+        }
+        
+        /* 新增：修改BY:这一格为白色 */
+        .signature-row td:first-child.blue-left {
+            background-color: white !important;
+        }
+        
+        /* 新增：等待输入提示文字样式 */
+        .waiting-input {
+            color: #999;
+            font-style: italic;
+        }
+        
+        /* 新增：白色单元格样式 */
+        .white-cell {
+            background-color: white !important;
+        }
+        .white-cell input {
+            background-color: white !important;
+        }
+        
+        /* 新增：针对特定单元格的白色背景样式 */
+        #actual-liters.white-cell {
+            background-color: white !important;
+        }
+        
+        #english-name-display.white-cell {
+            background-color: white !important;
+        }
+        
+        #employee-number-display.white-cell {
+            background-color: white !important;
+        }
+        
+        .white-truck-note {
+            background-color: white !important;
+        }
+        
+        /* 新增：DEFERRED FUEL ITEMS 下面的粉红色空格高度调整 */
+        .deferred-fuel-pink-space {
+            background-color: #ffcccc;
+            height: 30px; /* 与黄色行相同的高度 */
+        }
+        .deferred-fuel-pink-space td {
+            border: 1px solid #ff9999;
+        }
+        
+        /* 新增：紅色圓圈樣式 - 數字改為黑色 */
+        .tolerance-circle {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            border: 3px solid red; /* 圓圈保持紅色 */
+            border-radius: 50%;
+            text-align: center;
+            font-weight: bold;
+            color: black; /* 數字改為黑色 */
+            font-size: 18px;
+            background-color: white;
+        }
+        
+        /* 新增：密度輸入格和單位格樣式 */
+        .density-container {
+            display: flex;
+            align-items: center;
+            padding: 0;
+            height: 100%;
+        }
+        
+        .density-input-cell {
+            background-color: white !important;
+            width: 60%;
+            border-right: 1px solid #ddd;
+            padding: 5px;
+        }
+        
+        .density-unit-cell {
+            background-color: #e6f2ff !important;
+            width: 40%;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 5px;
+        }
+        
+        .density-input-cell input {
+            width: 100%;
+            border: none;
+            padding: 0;
+            text-align: center;
+            font-size: 14px;
+            background-color: white;
+        }
+        
+        /* 確保密度行的備註格正確顯示 */
+        .density-note {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+            background-color: #e6f2ff;
+        }
+        
+        /* 新增：紅色文字樣式 */
+        .red-text {
+            color: red;
+        }
+        
+        @media (max-width: 768px) {
+            .bottom-rows {
+                font-size: 12px;
+            }
+            .bottom-rows td {
+                padding: 5px 6px;
+            }
+            .bottom-rows td:first-child {
+                min-width: 140px;
+            }
+            .fuel-time-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .button-section {
+                justify-content: center;
+            }
+            .fuel-estimation {
+                text-align: center;
+            }
+            
+            /* 在平板設備上調整密度單位格 */
+            .density-unit-cell {
+                font-size: 11px;
+            }
+            
+            /* 在平板設備上調整KHH說明字體大小 */
+            .khh-note {
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .bottom-rows {
+                font-size: 11px;
+            }
+            .bottom-rows td {
+                padding: 4px 5px;
+            }
+            .bottom-rows td:first-child {
+                min-width: 120px;
+            }
+            .bottom-rows .formula-cell {
+                min-width: 60px;
+            }
+            .button-section {
+                flex-direction: column;
+                width: 100%;
+            }
+            .button-section button {
+                width: 100%;
+            }
+            
+            /* 在手機上調整圓圈大小 */
+            .tolerance-circle {
+                width: 40px;
+                height: 40px;
+                line-height: 40px;
+                font-size: 16px;
+            }
+            
+            /* 在手機上調整密度單位格 */
+            .density-unit-cell {
+                font-size: 10px;
+            }
+            
+            /* 在手機上調整KHH說明字體大小 */
+            .khh-note {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 新的免責聲明 -->
+        <div class="disclaimer-container">
+            <div class="disclaimer-title">免責聲明：</div>
+            <div class="disclaimer-content">
+                <p>本網站為非營利性質，僅供內部交流與學習使用。</p>
+                <p>本網站所提供之資料與計算結果僅供參考，使用者應自行確認其正確性，本網站不對計算結果負責，敬請見諒。</p>
+                <div class="khh-note">
+                    1. 拖機時 1L的藍色安全簽封 先撕下來，拖到開門RC會要回去，不要亂丟<br>
+                    2. 拖到定位後，要量胎壓，擦減震<br>
+                    3. 電報的紙本油單:<br>
+                    &nbsp;&nbsp;&nbsp;第一張 給教官<br>
+                    &nbsp;&nbsp;&nbsp;第二張 給長勤RC(運務）<br>
+                    4. 油車給的油單 2張都給長勤RC(運務)<br>
+                    &nbsp;&nbsp;&nbsp;（機務拍照for 完工MK系統）<br>
+                    5. 教官開APU，就可以詢問是否徹除 橋氣，橋電<br>
+                    6. 後推完畢 給教官看完steering pin就可以離開，不用跟乘客揮手
+                </div>
+            </div>
+        </div>
+        
+        <!-- 加油预估时间 - 整合了锁定按钮组件 -->
+        <div class="fuel-time-container">
+            <div class="button-section">
+                <button class="start-fuel-btn" id="start-fuel-btn">開始加油</button>
+                <button class="lock-button" id="lockPageBtn">鎖定網頁</button>
+                <button class="unlock-button" id="unlockPageBtn">解除鎖定</button>
+                <button class="status-button" id="statusButton">狀態：已解鎖，可輸入</button>
+            </div>
+            <div class="fuel-estimation" id="fuel-estimation">加油結束預估時間：<span id="estimated-time">尚未計算</span></div>
+        </div>
+        
+        <table>
+            <tr>
+                <td colspan="9" class="title">聯合航空加油單計算</td>
+            </tr>
+            <tr>
+                <td colspan="9" class="subtitle">UNITED AIRLINES ROUTINE FUEL SERVICE FORM</td>
+            </tr>
+            <tr>
+                <td colspan="9" class="subtitle">DISPATCH REQUESTED LOAD</td>
+            </tr>
+            <tr>
+                <td colspan="9" class="section-title">FUEL DISTRIBUTION (LBS)</td>
+            </tr>
+            <tr class="fuel-distribution">
+                <td class="chinese-note"></td> <!-- 标题行第一格保持空白 -->
+                <td>TANK</td>
+                <td>BEFORE</td>
+                <td>DESIRED</td>
+                <td>AFTER</td>
+                <td colspan="4" class="note blue-left">備註</td>
+            </tr>
+            <tr class="fuel-distribution">
+                <td class="chinese-note">左邊油箱</td> <!-- 在原本的空白列中添加中文说明 -->
+                <td>L WING</td>
+                <td class="white-cell">
+                    <input type="number" id="lwing-before" min="0" step="1" placeholder="輸入數">
+                </td>
+                <td class="white-cell" id="lwing-desired">電報會印</td>
+                <td class="white-cell">
+                    <input type="number" id="lwing-after" min="0" step="1" placeholder="輸入數">
+                </td>
+                <td colspan="4" class="note blue-left">請依照電報油量加油</td>
+            </tr>
+            <tr class="fuel-distribution">
+                <td class="chinese-note">中間油箱</td> <!-- 在原本的空白列中添加中文说明 -->
+                <td>CENTER</td>
+                <td class="white-cell">
+                    <input type="number" id="center-before" min="0" step="1" placeholder="輸入數">
+                </td>
+                <td class="white-cell" id="center-desired">電報會印</td>
+                <td class="white-cell">
+                    <input type="number" id="center-after" min="0" step="1" placeholder="輸入數">
+                </td>
+                <td colspan="4" class="note blue-left">請依照電報油量加油</td>
+            </tr>
+            <tr class="fuel-distribution">
+                <td class="chinese-note">右邊油箱</td> <!-- 在原本的空白列中添加中文说明 -->
+                <td>R WING</td>
+                <td class="white-cell">
+                    <input type="number" id="rwing-before" min="0" step="1" placeholder="輸入數">
+                </td>
+                <td class="white-cell" id="rwing-desired">電報會印</td>
+                <td class="white-cell">
+                    <input type="number" id="rwing-after" min="0" step="1" placeholder="輸入數">
+                </td>
+                <td colspan="4" class="note blue-left">請依照電報油量加油</td>
+            </tr>
+            <tr class="fuel-distribution">
+                <td class="chinese-note">總油量</td> <!-- 在原本的空白列中添加中文说明 -->
+                <td>TOTAL</td>
+                <td class="white-cell waiting-input" id="before-total">請等全部數值輸入完畢再抄寫</td>
+                <td class="white-cell">TOTAL</td>
+                <td class="white-cell waiting-input" id="after-total">請等全部數值輸入完畢再抄寫</td>
+                <td colspan="4" class="blue-left"></td>
+            </tr>
+            
+            <!-- 原本的計劃油量計算部分，只刪除標題文字，保留所有格子 -->
+            <tr>
+                <td class="blue-left">計畫總油量</td>
+                <td>PLANNED GATE FUEL</td>
+                <td class="white-cell">
+                    <input type="number" id="planned-fuel" min="0" step="1" placeholder="輸入數">
+                </td>
+                <td colspan="6" class="note blue-left">填電報需求油量</td>
+            </tr>
+            <tr>
+                <td class="blue-left">減去加油前現有油量</td>
+                <td>SUBTRACT BEFORE FUEL TOTAL</td>
+                <td class="white-cell waiting-input" id="subtract-before">請等全部數值輸入完畢再抄寫</td>
+                <td colspan="6" class="blue-left"></td>
+            </tr>
+            <tr>
+                <td class="blue-left">應加油量</td>
+                <td>EQUALS POUNDS TO ADD/REMOVE</td>
+                <td class="white-cell waiting-input" id="pounds-to-add">請等全部數值輸入完畢再抄寫</td>
+                <td colspan="6" class="blue-left"></td>
+            </tr>
+            <!-- 修改的除以密度行，將輸入格拆分為輸入格和單位格 -->
+            <tr>
+                <td class="blue-left">除以密度</td>
+                <td>DIVIDED BY DENSITY</td>
+                <td class="density-container" colspan="2">
+                    <div class="density-input-cell">
+                        <input type="number" id="density" min="0" step="0.001" placeholder="輸入數">
+                    </div>
+                    <div class="density-unit-cell">
+                        LBS/GAL
+                    </div>
+                </td>
+                <td colspan="5" class="density-note blue-left">填電報密度</td>
+            </tr>
+            <tr>
+                <td class="blue-left">應加GAL油量</td>
+                <td>CALCULATED GALLONS TO ADD /REMOVE</td>
+                <td class="white-cell waiting-input" id="calculated-gallons">請等全部數值輸入完畢再抄寫</td>
+                <td colspan="6" class="blue-left"></td>
+            </tr>
+            
+            <!-- 修改为粉红色的空格 (1) - 高度改為30px -->
+            <tr class="pink-row-space">
+                <td colspan="9"></td>
+            </tr>
+            
+            <!-- 原本的實際加油量計算部分，只刪除標題文字，保留所有格子 -->
+            <tr>
+                <td class="blue-left"></td>
+                <td>SUBTRACT TOTAL GALLONS ADDED</td>
+                <td class="white-cell waiting-input" id="subtract-gallons">請等全部數值輸入完畢再抄寫</td>
+                <td>TRUCK 1</td>
+                <td class="white-truck-note white-cell" colspan="5">加完油的中油油車號碼</td>
+            </tr>
+            
+            <!-- 新增的TRUCK 2行，第三格改為藍色並添加文字 -->
+            <tr class="truck-row">
+                <td class="blue-left"></td>
+                <td></td>
+                <td class="blue-cell">不用寫</td>
+                <td>TRUCK 2</td>
+                <td class="white-truck-note white-cell" colspan="5">第一次<span class="red-text">補油</span>的中油油車號碼</td>
+            </tr>
+            
+            <!-- 新增的TRUCK 3行，第三格改為藍色並添加文字 -->
+            <tr class="truck-row">
+                <td class="blue-left"></td>
+                <td></td>
+                <td class="blue-cell">不用寫</td>
+                <td>TRUCK 3</td>
+                <td class="white-truck-note white-cell" colspan="5">第二次<span class="red-text">補油</span>的中油油車號碼</td>
+            </tr>
+            
+            <tr>
+                <td class="blue-left"></td>
+                <td>EQUALS</td>
+                <td class="white-cell waiting-input" id="equals">請等全部數值輸入完畢再抄寫</td>
+                <td>TOLERANCE</td>
+                <td class="white-cell tolerance-merged waiting-input" id="tolerance" colspan="5">請等全部數值輸入完畢再抄寫</td>
+            </tr>
+            
+            <!-- 新增的檢查項目 -->
+            <tr>
+                <td colspan="9" class="check-item">
+                    PROPERLY FUELED, DISCREPANCIES REPORTED, INDICATORS AND LIGHTS TESTED, VISUAL ADAPTER CHECK COMPLETED, AND FUEL PANEL DOOR CLOSED
+                </td>
+            </tr>
+            
+            <!-- 修改後的員工號選擇行 (粉紅色) -->
+            <tr class="employee-input-row">
+                <td colspan="2">員工號：</td>
+                <td class="input-cell" colspan="7">
+                    <select id="employee-id-select">
+                        <option value="">請選擇員工號</option>
+                        <option value="645388">645388 - 施登元</option>
+                        <option value="640914">640914 - 曾景松</option>
+                        <option value="646805">646805 - 康子平</option>
+                        <option value="633739">633739 - 吳建宗</option>
+                        <option value="648660">648660 - 蒲翊青</option>
+                        <option value="639311">639311 - 張帝如</option>
+                        <option value="648295">648295 - 謝宏望</option>
+                        <option value="646539">646539 - 林裕斌</option>
+                        <option value="646207">646207 - 方彥霖</option>
+                        <option value="648284">648284 - 吳世廷</option>
+                        <option value="646807">646807 - 張景驊</option>
+                        <option value="648407">648407 - 陳科全</option>
+                        <option value="648281">648281 - 陳冠勛</option>
+                        <option value="638361">638361 - 陳枝萬</option>
+                    </select>
+                </td>
+            </tr>
+            
+            <!-- 修改後的簽名行，改為顯示區域 -->
+            <tr class="signature-row">
+                <td class="blue-left">BY :</td>
+                <td class="white-cell display-cell" id="english-name-display" colspan="2">已上過UA加油訓練的授權人員</td>
+                <td>EMPLOYEE NUMBER :</td>
+                <td class="white-cell display-cell" id="employee-number-display" colspan="4">通過加油訓練後的授權號碼</td>
+            </tr>
+            
+            <!-- 新增的黃色警告行 -->
+            <tr class="yellow-row">
+                <td colspan="9">*TANKS NEAR OR AT CAPACITY. CAUTION FUEL SPILL POSSIBLE *</td>
+            </tr>
+            
+            <!-- 修改為黃色的 DEFERRED FUEL ITEMS 行，並將3262改為???? -->
+            <tr class="yellow-row">
+                <td colspan="9">DEFERRED FUEL ITEMS / ???? ( PLACARD TEXT )</td>
+            </tr>
+            
+            <!-- 修改为粉红色的空格 (2) - 调整为与黄色行相同的高度 -->
+            <tr class="deferred-fuel-pink-space">
+                <td colspan="9"></td>
+            </tr>
+            
+            <!-- 底部三行 - 保持特殊樣式 -->
+            <tr class="bottom-rows">
+                <td class="blue-left"></td>
+                <td>CALC GALS - TOL( 75 ) =</td>
+                <td class="white-cell waiting-input" id="calc-gals-minus">請等全部數值輸入完畢再抄寫</td>
+                <td>GALS *3.78541=</td>
+                <td class="white-cell waiting-input" id="gals-minus-liters">請等全部數值輸入完畢再抄寫</td>
+                <td colspan="3">MIN LITERS TO BE ADDED</td>
+            </tr>
+            <tr class="bottom-rows">
+                <td class="blue-left"></td>
+                <td>CALC GALS + TOL( 75 ) =</td>
+                <td class="white-cell waiting-input" id="calc-gals-plus">請等全部數值輸入完畢再抄寫</td>
+                <td>GALS *3.78541=</td>
+                <td class="white-cell waiting-input" id="gals-plus-liters">請等全部數值輸入完畢再抄寫</td>
+                <td colspan="3">MAX LITERS TO BE ADDED</td>
+            </tr>
+            <!-- 修改後的實際加油量計算行 - 已將第一格改為藍色 -->
+            <tr class="actual-fuel-row">
+                <td class="blue-cell"></td>
+                <td>ACTUAL LITERS ADDED</td>
+                <td class="white-cell waiting-input" id="actual-liters">請等全部數值輸入完畢再抄寫</td>
+                <td>/3.78541=</td>
+                <td class="white-cell waiting-input" id="liters-to-gals">請等全部數值輸入完畢再抄寫</td>
+                <td colspan="4">ACTUAL GALS ADDED</td>
+            </tr>
+            
+            <!-- 修正的粉紅色區域 - 添加了辅助计算单元格 -->
+            <tr class="pink-row">
+                <td class="assistant-cell" rowspan="2"></td>
+                <td>加完油的中油油單LITERS</td>
+                <td class="plus-cell" rowspan="2">+</td>
+                <td>第一次<span class="red-text">補油</span>的中油油單LITERS</td>
+                <td class="plus-cell" rowspan="2">+</td>
+                <td colspan="4">第二次<span class="red-text">補油</span>的中油油單LITERS</td>
+            </tr>
+            <tr class="pink-row">
+                <td class="input-cell">
+                    <input type="number" id="first-receipt" min="0" step="1" placeholder="輸入數值">
+                </td>
+                <td class="input-cell">
+                    <input type="number" id="second-receipt" min="0" step="1" placeholder="輸入數值">
+                </td>
+                <td class="input-cell" colspan="4">
+                    <input type="number" id="third-receipt" min="0" step="1" placeholder="輸入數值">
+                </td>
+            </tr>
+            
+            <!-- 新增的一排藍色空格 (3) - 改為正常高度 -->
+            <tr class="blue-row-normal">
+                <td colspan="9"></td>
+            </tr>
+            
+            <!-- 新增備註行 -->
+            <tr class="remarks-row">
+                <td class="blue-left" colspan="9">REMARKS :</td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        // 頁面鎖定狀態
+        let isPageLocked = false;
+        
+        // 員工資料庫
+        const employeeData = {
+            '645388': { chineseName: '施登元', englishName: 'DENG-YUAN SHIN', employeeId: 'V952756' },
+            '640914': { chineseName: '曾景松', englishName: 'CHING-SUNG TSENG', employeeId: 'V952757' },
+            '646805': { chineseName: '康子平', englishName: 'TZU-PING KANG', employeeId: 'V952758' },
+            '633739': { chineseName: '吳建宗', englishName: 'JIAN-TZONG WU', employeeId: 'V952759' },
+            '648660': { chineseName: '蒲翊青', englishName: 'YIH-CHING PU', employeeId: 'V952760' },
+            '639311': { chineseName: '張帝如', englishName: 'DI-RU CHANG', employeeId: 'V952761' },
+            '648295': { chineseName: '謝宏望', englishName: 'HUNG-WANG HSIEH', employeeId: 'V952762' },
+            '646539': { chineseName: '林裕斌', englishName: 'YU-PIN LIN', employeeId: 'V952763' },
+            '646207': { chineseName: '方彥霖', englishName: 'YAN-LIN FANG', employeeId: 'V952764' },
+            '648284': { chineseName: '吳世廷', englishName: 'SHI-TING WU', employeeId: 'V952765' },
+            '646807': { chineseName: '張景驊', englishName: 'CHING-HUA CHANG', employeeId: 'V952766' },
+            '648407': { chineseName: '陳科全', englishName: 'KE-CHUAN CHEN', employeeId: 'V952767' },
+            '648281': { chineseName: '陳冠勛', englishName: 'KUAN-HSUN CHEN', employeeId: 'V952768' },
+            '638361': { chineseName: '陳枝萬', englishName: 'CHEN CHIH WAN', employeeId: 'V951812' }
+        };
+
+        // 初始化函數
+        function initializeApp() {
+            // 綁定事件監聽器
+            document.getElementById('start-fuel-btn').addEventListener('click', calculateFuelTime);
+            document.getElementById('lockPageBtn').addEventListener('click', lockPage);
+            document.getElementById('unlockPageBtn').addEventListener('click', unlockPage);
+            
+            // 檢查是否有保存的資料
+            const savedData = localStorage.getItem('lockComponentData');
+            const isLocked = localStorage.getItem('isPageLocked');
+            
+            if (savedData && isLocked === 'true') {
+                const inputValues = JSON.parse(savedData);
+                
+                // 恢復輸入值
+                Object.keys(inputValues).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        if (element.tagName === 'INPUT') {
+                            element.value = inputValues[key];
+                            element.disabled = true; // 鎖定狀態下禁用輸入框
+                        } else if (element.tagName === 'SELECT') {
+                            element.value = inputValues[key];
+                            element.disabled = true; // 鎖定狀態下禁用選擇框
+                        }
+                    }
+                });
+                
+                isPageLocked = true;
+                
+                // 更新狀態按鈕
+                updateStatusButton();
+                
+                alert('已恢復上次鎖定的資料。');
+            }
+            
+            // 員工號選擇事件處理
+            document.getElementById('employee-id-select').addEventListener('change', function() {
+                const employeeId = this.value;
+                const employeeInfo = employeeData[employeeId];
+                const englishNameDisplay = document.getElementById('english-name-display');
+                const employeeNumberDisplay = document.getElementById('employee-number-display');
+                
+                // 移除提示文字樣式
+                englishNameDisplay.classList.remove('hint-text');
+                employeeNumberDisplay.classList.remove('hint-text');
+                
+                if (employeeInfo) {
+                    // 顯示英文姓名和員工號碼
+                    englishNameDisplay.textContent = employeeInfo.englishName;
+                    employeeNumberDisplay.textContent = employeeInfo.employeeId;
+                } else {
+                    // 沒有選擇或選擇了預設選項
+                    // 恢復提示文字
+                    englishNameDisplay.textContent = '已上過UA加油訓練的授權人員';
+                    employeeNumberDisplay.textContent = '通過加油訓練後的授權號碼';
+                    // 添加提示文字樣式
+                    englishNameDisplay.classList.add('hint-text');
+                    employeeNumberDisplay.classList.add('hint-text');
+                }
+            });
+            
+            // 初始計算
+            calculateAll();
+        }
+        
+        // 計算加油時間
+        function calculateFuelTime() {
+            // 先更新所有計算
+            calculateAll();
+            
+            const poundsToAdd = parseFloat(document.getElementById('pounds-to-add').textContent.replace(/,/g, '')) || 0;
+            
+            if (poundsToAdd <= 0) {
+                document.getElementById('estimated-time').textContent = "請先輸入正確的油量數據";
+                return;
+            }
+            
+            // 計算加油時間（分鐘）- 修正為每分鐘920磅的加油速率
+            const fuelTimeMinutes = poundsToAdd / 920;
+            
+            // 獲取當前台灣時間
+            const now = new Date();
+            
+            // 計算結束時間
+            const endTime = new Date(now.getTime() + (fuelTimeMinutes * 60 * 1000));
+            
+            // 格式化時間顯示
+            const options = { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit', 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false
+            };
+            
+            const formattedTime = endTime.toLocaleString('zh-TW', options);
+            
+            // 顯示加油持續時間
+            const durationHours = Math.floor(fuelTimeMinutes / 60);
+            const durationMinutes = Math.round(fuelTimeMinutes % 60);
+            
+            let durationText = "";
+            if (durationHours > 0) {
+                durationText = `（約需 ${durationHours} 小時 ${durationMinutes} 分鐘）`;
+            } else {
+                durationText = `（約需 ${durationMinutes} 分鐘）`;
+            }
+            
+            // 更新顯示
+            document.getElementById('estimated-time').textContent = `${formattedTime} ${durationText}`;
+        }
+        
+        // 更新狀態按鈕
+        function updateStatusButton() {
+            const statusButton = document.getElementById('statusButton');
+            if (isPageLocked) {
+                statusButton.textContent = "狀態：已鎖定，請解鎖";
+                statusButton.style.backgroundColor = "#ffcccc"; // 淺紅色
+            } else {
+                statusButton.textContent = "狀態：已解鎖，可輸入";
+                statusButton.style.backgroundColor = "#90EE90"; // 淺綠色
+            }
+        }
+        
+        // 鎖定網頁功能
+        function lockPage() {
+            isPageLocked = true;
+            
+            // 禁用所有輸入框和選擇框
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.disabled = true;
+            });
+            
+            // 保存所有輸入值到localStorage
+            const inputValues = {};
+            
+            inputs.forEach(input => {
+                inputValues[input.id] = input.value;
+            });
+            
+            // 保存到localStorage
+            localStorage.setItem('lockComponentData', JSON.stringify(inputValues));
+            localStorage.setItem('isPageLocked', 'true');
+            
+            // 更新狀態按鈕
+            updateStatusButton();
+            
+            alert('網頁已鎖定，所有輸入框已禁用，重新整理頁面不會丟失資料。');
+        }
+        
+        // 解除鎖定功能
+        function unlockPage() {
+            isPageLocked = false;
+            
+            // 啟用所有輸入框和選擇框
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.disabled = false;
+            });
+            
+            localStorage.removeItem('lockComponentData');
+            localStorage.removeItem('isPageLocked');
+            
+            // 更新狀態按鈕
+            updateStatusButton();
+            
+            alert('網頁已解除鎖定，可以重新整理頁面了。');
+        }
+        
+        // 計算所有油量相關數據 - 修正計算邏輯
+        function calculateAll() {
+            // 獲取所有輸入值，如果為空則設為0
+            const lwingBefore = parseFloat(document.getElementById('lwing-before').value) || 0;
+            const centerBefore = parseFloat(document.getElementById('center-before').value) || 0;
+            const rwingBefore = parseFloat(document.getElementById('rwing-before').value) || 0;
+            const lwingAfter = parseFloat(document.getElementById('lwing-after').value) || 0;
+            const centerAfter = parseFloat(document.getElementById('center-after').value) || 0;
+            const rwingAfter = parseFloat(document.getElementById('rwing-after').value) || 0;
+            const plannedFuel = parseFloat(document.getElementById('planned-fuel').value) || 0;
+            const density = parseFloat(document.getElementById('density').value) || 0;
+            
+            // 計算三張油單的總和
+            const firstReceipt = parseFloat(document.getElementById('first-receipt').value) || 0;
+            const secondReceipt = parseFloat(document.getElementById('second-receipt').value) || 0;
+            const thirdReceipt = parseFloat(document.getElementById('third-receipt').value) || 0;
+            const actualLiters = firstReceipt + secondReceipt + thirdReceipt;
+            
+            // 計算基本總和
+            const beforeTotal = lwingBefore + centerBefore + rwingBefore;
+            const afterTotal = lwingAfter + centerAfter + rwingAfter;
+            
+            // 計劃油量計算
+            const poundsToAdd = plannedFuel - beforeTotal;
+            const calculatedGallons = density > 0 ? poundsToAdd / density : 0;
+            
+            // 實際加油量計算
+            const litersToGals = actualLiters / 3.78541;
+            
+            // 修正計算邏輯
+            const subtractGallons = Math.round(litersToGals);
+            const equals = subtractGallons - Math.round(calculatedGallons);
+            
+            // 檢查是否有足夠的輸入來計算公差
+            const hasAllInputs = plannedFuel > 0 && density > 0 && 
+                                (lwingBefore > 0 || centerBefore > 0 || rwingBefore > 0) &&
+                                (firstReceipt > 0 || secondReceipt > 0 || thirdReceipt > 0);
+            
+            // 最小/最大油量計算
+            const roundedCalculatedGallons = Math.round(calculatedGallons);
+            const calcGalsMinus = roundedCalculatedGallons - 75;
+            const galsMinusLiters = calcGalsMinus * 3.78541;
+            
+            const calcGalsPlus = roundedCalculatedGallons + 75;
+            const galsPlusLiters = calcGalsPlus * 3.78541;
+            
+            // 檢查是否所有必要輸入都有值
+            const hasRequiredInputs = plannedFuel > 0 && density > 0 && 
+                                (lwingBefore > 0 || centerBefore > 0 || rwingBefore > 0);
+            
+            // 更新顯示結果
+            function formatValue(value, hasInput = true) {
+                if (!hasInput || isNaN(value)) return "-";
+                return Math.round(value).toLocaleString();
+            }
+            
+            // 更新所有結果顯示
+            const beforeTotalCell = document.getElementById('before-total');
+            const afterTotalCell = document.getElementById('after-total');
+            const subtractBeforeCell = document.getElementById('subtract-before');
+            const poundsToAddCell = document.getElementById('pounds-to-add');
+            const calculatedGallonsCell = document.getElementById('calculated-gallons');
+            const litersToGalsCell = document.getElementById('liters-to-gals');
+            const subtractGallonsCell = document.getElementById('subtract-gallons');
+            const equalsCell = document.getElementById('equals');
+            const calcGalsMinusCell = document.getElementById('calc-gals-minus');
+            const galsMinusLitersCell = document.getElementById('gals-minus-liters');
+            const calcGalsPlusCell = document.getElementById('calc-gals-plus');
+            const galsPlusLitersCell = document.getElementById('gals-plus-liters');
+            const actualLitersCell = document.getElementById('actual-liters');
+            const toleranceCell = document.getElementById('tolerance');
+            
+            // 檢查是否有任何油箱輸入
+            const hasAnyTankInput = lwingBefore > 0 || centerBefore > 0 || rwingBefore > 0 || 
+                                   lwingAfter > 0 || centerAfter > 0 || rwingAfter > 0;
+            
+            // 檢查是否有任何油單輸入
+            const hasAnyReceiptInput = firstReceipt > 0 || secondReceipt > 0 || thirdReceipt > 0;
+            
+            // 更新所有單元格
+            if (hasAnyTankInput) {
+                beforeTotalCell.textContent = formatValue(beforeTotal);
+                afterTotalCell.textContent = formatValue(afterTotal);
+                subtractBeforeCell.textContent = formatValue(beforeTotal);
+                beforeTotalCell.classList.remove('waiting-input');
+                afterTotalCell.classList.remove('waiting-input');
+                subtractBeforeCell.classList.remove('waiting-input');
+            } else {
+                beforeTotalCell.textContent = "請等全部數值輸入完畢再抄寫";
+                afterTotalCell.textContent = "請等全部數值輸入完畢再抄寫";
+                subtractBeforeCell.textContent = "請等全部數值輸入完畢再抄寫";
+                beforeTotalCell.classList.add('waiting-input');
+                afterTotalCell.classList.add('waiting-input');
+                subtractBeforeCell.classList.add('waiting-input');
+            }
+            
+            if (plannedFuel > 0 && hasAnyTankInput) {
+                poundsToAddCell.textContent = formatValue(poundsToAdd);
+                poundsToAddCell.classList.remove('waiting-input');
+            } else {
+                poundsToAddCell.textContent = "請等全部數值輸入完畢再抄寫";
+                poundsToAddCell.classList.add('waiting-input');
+            }
+            
+            if (plannedFuel > 0 && density > 0 && hasAnyTankInput) {
+                calculatedGallonsCell.textContent = formatValue(calculatedGallons);
+                calculatedGallonsCell.classList.remove('waiting-input');
+            } else {
+                calculatedGallonsCell.textContent = "請等全部數值輸入完畢再抄寫";
+                calculatedGallonsCell.classList.add('waiting-input');
+            }
+            
+            if (hasAnyReceiptInput) {
+                actualLitersCell.textContent = actualLiters.toLocaleString();
+                litersToGalsCell.textContent = formatValue(litersToGals);
+                subtractGallonsCell.textContent = formatValue(subtractGallons);
+                actualLitersCell.classList.remove('waiting-input');
+                litersToGalsCell.classList.remove('waiting-input');
+                subtractGallonsCell.classList.remove('waiting-input');
+            } else {
+                actualLitersCell.textContent = "請等全部數值輸入完畢再抄寫";
+                litersToGalsCell.textContent = "請等全部數值輸入完畢再抄寫";
+                subtractGallonsCell.textContent = "請等全部數值輸入完畢再抄寫";
+                actualLitersCell.classList.add('waiting-input');
+                litersToGalsCell.classList.add('waiting-input');
+                subtractGallonsCell.classList.add('waiting-input');
+            }
+            
+            if (hasAnyReceiptInput && plannedFuel > 0 && density > 0 && hasAnyTankInput) {
+                equalsCell.textContent = formatValue(equals);
+                equalsCell.classList.remove('waiting-input');
+            } else {
+                equalsCell.textContent = "請等全部數值輸入完畢再抄寫";
+                equalsCell.classList.add('waiting-input');
+            }
+            
+            // 更新公差顯示 - 只有在有足夠輸入時才顯示紅色圓圈（數字為黑色）
+            if (hasAllInputs) {
+                let toleranceHTML = "";
+                if (equals > 0) {
+                    toleranceHTML = '<span class="tolerance-circle">+75</span>';
+                } else if (equals < 0) {
+                    toleranceHTML = '<span class="tolerance-circle">-75</span>';
+                } else {
+                    toleranceHTML = '<span class="tolerance-circle">±0</span>';
+                }
+                toleranceCell.innerHTML = toleranceHTML;
+                toleranceCell.classList.remove('waiting-input');
+            } else {
+                toleranceCell.textContent = "請等全部數值輸入完畢再抄寫";
+                toleranceCell.classList.add('waiting-input');
+            }
+            
+            // 更新底部三行，根據輸入情況顯示計算結果或提示文字
+            if (hasRequiredInputs) {
+                calcGalsMinusCell.textContent = formatValue(calcGalsMinus);
+                galsMinusLitersCell.textContent = formatValue(galsMinusLiters);
+                calcGalsPlusCell.textContent = formatValue(calcGalsPlus);
+                galsPlusLitersCell.textContent = formatValue(galsPlusLiters);
+                
+                // 移除等待輸入樣式
+                calcGalsMinusCell.classList.remove('waiting-input');
+                galsMinusLitersCell.classList.remove('waiting-input');
+                calcGalsPlusCell.classList.remove('waiting-input');
+                galsPlusLitersCell.classList.remove('waiting-input');
+            } else {
+                calcGalsMinusCell.textContent = "請等全部數值輸入完畢再抄寫";
+                galsMinusLitersCell.textContent = "請等全部數值輸入完畢再抄寫";
+                calcGalsPlusCell.textContent = "請等全部數值輸入完畢再抄寫";
+                galsPlusLitersCell.textContent = "請等全部數值輸入完畢再抄寫";
+                
+                // 添加等待輸入樣式
+                calcGalsMinusCell.classList.add('waiting-input');
+                galsMinusLitersCell.classList.add('waiting-input');
+                calcGalsPlusCell.classList.add('waiting-input');
+                galsPlusLitersCell.classList.add('waiting-input');
+            }
+            
+            // ================= 新增檢查邏輯 =================
+            // 當必要輸入與油單輸入都存在時，檢查實際公升數是否在允許範圍內
+            if (hasRequiredInputs && hasAnyReceiptInput) {
+                const minLiters = galsMinusLiters;      // 最小應加公升數
+                const maxLiters = galsPlusLiters;        // 最大應加公升數
+                const actual = actualLiters;              // 實際加油公升數
+                
+                // 確保數值有效（非 NaN）
+                if (!isNaN(minLiters) && !isNaN(maxLiters) && !isNaN(actual)) {
+                    // 如果實際油量低於最小值或高於最大值，彈出警告
+                    if (actual < minLiters || actual > maxLiters) {
+                        alert('1.請再次確認數值輸入是否輸入正確\n2.密度輸入是否正確\n3.是否有新的第二張油單，如果是，請確認輸入是不是新的第二張油單的油量');
+                    }
+                }
+            }
+            // ================= 結束檢查邏輯 =================
+        }
+        
+        // 為所有油量相關輸入添加事件監聽器
+        const inputIds = [
+            'lwing-before', 'lwing-after', 'center-before', 'center-after',
+            'rwing-before', 'rwing-after', 'planned-fuel', 'density',
+            'first-receipt', 'second-receipt', 'third-receipt'
+        ];
+        
+        inputIds.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener('input', calculateAll);
+                input.addEventListener('change', calculateAll);
+            }
+        });
+
+        // 初始化計算 - 使用DOMContentLoaded確保頁面完全載入後再執行
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            
+            // 防止頁面重新整理
+            window.addEventListener('beforeunload', function(e) {
+                if (isPageLocked) {
+                    e.preventDefault();
+                    e.returnValue = '您有未保存的更改，確定要離開嗎？';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
