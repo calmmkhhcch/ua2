@@ -593,13 +593,23 @@
             }
         }
 
-        /* 新增計算結果行樣式 */
+        /* 計算結果行樣式 - 正常為綠色，超出範圍會套用閃爍紅色 */
         .comparison-row {
             background-color: #d9ead3;
             font-weight: bold;
             text-align: left;
             padding: 10px;
-            white-space: pre-line; /* 讓換行符號能正常顯示 */
+            white-space: pre-line;
+        }
+
+        /* 閃爍紅色動畫 */
+        @keyframes blinkBackground {
+            0% { background-color: #ffcccc; }
+            50% { background-color: #ff6666; }
+            100% { background-color: #ffcccc; }
+        }
+        .blink-red {
+            animation: blinkBackground 1s infinite;
         }
     </style>
 </head>
@@ -1203,8 +1213,11 @@
                 galsPlusLitersCell.classList.add('waiting-input');
             }
             
-            // ========== 油量比對與反推邏輯，並依過多/過少顯示不同訊息 ==========
+            // ========== 油量比對與反推邏輯，並依過多/過少顯示不同訊息，同時控制閃爍 ==========
             const comparisonCell = document.getElementById('comparison-result');
+            
+            // 預設移除閃爍
+            comparisonCell.classList.remove('blink-red');
             
             // 檢查必要條件是否齊全
             if (!hasRequiredInputs || !hasAnyReceiptInput) {
@@ -1221,7 +1234,9 @@
             if (actualLiters >= minLitersContinuous && actualLiters <= maxLitersContinuous) {
                 comparisonCell.textContent = '計算結果：正常（實際加油量在允許範圍內）';
             } else {
-                // 需要反推建議的 beforeTotal
+                // 需要反推建議的 beforeTotal，並加上閃爍
+                comparisonCell.classList.add('blink-red');
+                
                 let suggestedBeforeTotal;
                 
                 if (actualLiters < minLitersContinuous) {
@@ -1274,4 +1289,4 @@
         });
     </script>
 </body>
-    </html>
+</html>
