@@ -593,12 +593,13 @@
             }
         }
 
-        /* 新增油量比對結果行樣式 */
+        /* 新增計算結果行樣式 */
         .comparison-row {
             background-color: #d9ead3;
             font-weight: bold;
             text-align: left;
             padding: 10px;
+            white-space: pre-line; /* 讓換行符號能正常顯示 */
         }
     </style>
 </head>
@@ -783,10 +784,10 @@
                 <td class="white-cell tolerance-merged waiting-input" id="tolerance" colspan="5">請等全部數值輸入完畢再抄寫</td>
             </tr>
             
-            <!-- 新增的油量比對結果行 (在檢查項目上方) -->
+            <!-- 新增的計算結果行 (在檢查項目上方) -->
             <tr>
                 <td colspan="9" class="comparison-row" id="comparison-result">
-                    油量比對結果：等待輸入...
+                    計算結果：等待輸入...
                 </td>
             </tr>
             
@@ -817,6 +818,8 @@
                         <option value="648407">648407 - 陳科全</option>
                         <option value="648281">648281 - 陳冠勛</option>
                         <option value="638361">638361 - 陳枝萬</option>
+                        <!-- 新增游源正 -->
+                        <option value="642358">642358 - 游源正</option>
                     </select>
                 </td>
             </tr>
@@ -908,9 +911,9 @@
         // 頁面鎖定狀態
         let isPageLocked = false;
         
-        // 員工資料庫
+        // 員工資料庫 (已更新施登元英文姓氏為 SHIH，新增游源正，並將英文名改為 YUAN-CHENG YOU)
         const employeeData = {
-            '645388': { chineseName: '施登元', englishName: 'DENG-YUAN SHIN', employeeId: 'V952756' },
+            '645388': { chineseName: '施登元', englishName: 'DENG-YUAN SHIH', employeeId: 'V952756' },
             '640914': { chineseName: '曾景松', englishName: 'CHING-SUNG TSENG', employeeId: 'V952757' },
             '646805': { chineseName: '康子平', englishName: 'TZU-PING KANG', employeeId: 'V952758' },
             '633739': { chineseName: '吳建宗', englishName: 'JIAN-TZONG WU', employeeId: 'V952759' },
@@ -923,7 +926,8 @@
             '646807': { chineseName: '張景驊', englishName: 'CHING-HUA CHANG', employeeId: 'V952766' },
             '648407': { chineseName: '陳科全', englishName: 'KE-CHUAN CHEN', employeeId: 'V952767' },
             '648281': { chineseName: '陳冠勛', englishName: 'KUAN-HSUN CHEN', employeeId: 'V952768' },
-            '638361': { chineseName: '陳枝萬', englishName: 'CHEN CHIH WAN', employeeId: 'V951812' }
+            '638361': { chineseName: '陳枝萬', englishName: 'CHEN CHIH WAN', employeeId: 'V951812' },
+            '642358': { chineseName: '游源正', englishName: 'YUAN-CHENG YOU', employeeId: 'V952850' }
         };
 
         // 初始化函數
@@ -967,9 +971,11 @@
                 employeeNumberDisplay.classList.remove('hint-text');
                 
                 if (employeeInfo) {
+                    // 顯示英文姓名和員工號碼
                     englishNameDisplay.textContent = employeeInfo.englishName;
                     employeeNumberDisplay.textContent = employeeInfo.employeeId;
                 } else {
+                    // 沒有選擇或選擇了預設選項
                     englishNameDisplay.textContent = '已上過UA加油訓練的授權人員';
                     employeeNumberDisplay.textContent = '通過加油訓練後的授權號碼';
                     englishNameDisplay.classList.add('hint-text');
@@ -1197,12 +1203,12 @@
                 galsPlusLitersCell.classList.add('waiting-input');
             }
             
-            // ========== 新增油量比對與反推邏輯，並加入「過少/過多」提示 ==========
+            // ========== 油量比對與反推邏輯，並依過多/過少顯示不同訊息 ==========
             const comparisonCell = document.getElementById('comparison-result');
             
             // 檢查必要條件是否齊全
             if (!hasRequiredInputs || !hasAnyReceiptInput) {
-                comparisonCell.textContent = '油量比對結果：請先輸入計劃總油量、密度、加油前油量及至少一張油單';
+                comparisonCell.textContent = '計算結果：請先輸入計劃總油量、密度、加油前油量及至少一張油單';
                 return;
             }
             
@@ -1213,33 +1219,32 @@
             
             // 判斷是否在範圍內
             if (actualLiters >= minLitersContinuous && actualLiters <= maxLitersContinuous) {
-                comparisonCell.textContent = '油量比對結果：正常（實際加油量在允許範圍內）';
+                comparisonCell.textContent = '計算結果：正常（實際加油量在允許範圍內）';
             } else {
                 // 需要反推建議的 beforeTotal
                 let suggestedBeforeTotal;
-                let directionText = '';
                 
                 if (actualLiters < minLitersContinuous) {
-                    // 實際加油量太低，需要提高 beforeTotal 以減少應加油量，使 minLiters 降低
-                    // 條件：actualLiters >= ( (plannedFuel - beforeTotal)/density - 75 ) * 3.78541
-                    // 推得 beforeTotal >= plannedFuel - density * (actualLiters/3.78541 + 75)
+                    // 實際加油量太低（過少）
                     const minBefore = plannedFuel - density * (actualLiters / 3.78541 + 75);
-                    suggestedBeforeTotal = Math.ceil(minBefore); // 取上限，確保滿足條件
-                    directionText = '過少';
-                } else { // actualLiters > maxLitersContinuous
-                    // 實際加油量太高，需要降低 beforeTotal 以增加應加油量，使 maxLiters 提高
-                    // 條件：actualLiters <= ( (plannedFuel - beforeTotal)/density + 75 ) * 3.78541
-                    // 推得 beforeTotal <= plannedFuel - density * (actualLiters/3.78541 - 75)
+                    suggestedBeforeTotal = Math.ceil(minBefore);
+                    if (suggestedBeforeTotal < 0) suggestedBeforeTotal = 0;
+                    if (suggestedBeforeTotal > plannedFuel) suggestedBeforeTotal = plannedFuel;
+                    comparisonCell.textContent = `計算結果：實際加油量過少，超出允許範圍。建議調整加油前總油量至 ${Math.round(suggestedBeforeTotal)} 磅`;
+                } else {
+                    // 實際加油量太高（過多）
                     const maxBefore = plannedFuel - density * (actualLiters / 3.78541 - 75);
-                    suggestedBeforeTotal = Math.floor(maxBefore); // 取下限，確保滿足條件
-                    directionText = '過多';
+                    suggestedBeforeTotal = Math.floor(maxBefore);
+                    if (suggestedBeforeTotal < 0) suggestedBeforeTotal = 0;
+                    if (suggestedBeforeTotal > plannedFuel) suggestedBeforeTotal = plannedFuel;
+                    
+                    // 使用 innerHTML 加上換行
+                    comparisonCell.innerHTML = `計算結果：實際加油量過多，超出允許範圍<br>` +
+                        `1.確認油量輸入正確？<br>` +
+                        `2.密度輸入正確？<br>` +
+                        `3.是否紙本油單有出過新的，而忘記改數字<br>` +
+                        `4.建議調整加油前總油量至 ${Math.round(suggestedBeforeTotal)} 磅`;
                 }
-                
-                // 確保建議值在合理範圍內 (0 ~ plannedFuel)
-                if (suggestedBeforeTotal < 0) suggestedBeforeTotal = 0;
-                if (suggestedBeforeTotal > plannedFuel) suggestedBeforeTotal = plannedFuel;
-                
-                comparisonCell.textContent = `油量比對結果：實際加油量${directionText}，超出允許範圍。建議調整加油前總油量至 ${Math.round(suggestedBeforeTotal)} 磅`;
             }
         }
         
