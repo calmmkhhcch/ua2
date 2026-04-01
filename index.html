@@ -459,11 +459,20 @@
             font-size: 14px;
             font-weight: 500;
         }
+        /* 固定前缀样式 */
+        .prefix-text {
+            font-weight: 600;
+            color: #2c3e66;
+            background-color: #f0f0f0;
+            padding: 2px 4px;
+            border-radius: 4px;
+            margin-right: 2px;
+        }
         .info-group input {
             border: none;
             background: transparent;
             padding: 4px 0;
-            width: 130px;
+            width: 110px;
             outline: none;
             border-bottom: 1px dashed #aaa;
             border-radius: 0;
@@ -506,7 +515,7 @@
         /* 截圖容器內部保證乾淨背景 */
         #screenshot-area {
             background-color: white;
-            padding: 1px 0 0 0;  /* 避免邊距問題 */
+            padding: 1px 0 0 0;
         }
         @media (max-width: 600px) {
             .flight-info-panel {
@@ -519,6 +528,9 @@
             }
             .info-group {
                 justify-content: space-between;
+            }
+            .info-group input {
+                width: 100%;
             }
         }
     </style>
@@ -558,7 +570,7 @@
 
     <!-- **** 截圖目標區域：從聯合航空加油單計算標題開始，包含新增資訊欄與完整表格 **** -->
     <div id="screenshot-area">
-        <!-- 新增的日期 / 飛機 / 航班號 + 截圖按鈕區域 (此按鈕截圖時會自動隱藏) -->
+        <!-- 新增的日期 / 飛機(固定前綴N-) / 航班號(固定前綴UA-) + 截圖按鈕 -->
         <div class="flight-info-panel" id="flightInfoPanel">
             <div class="info-group">
                 <label>📅 日期：</label>
@@ -566,29 +578,31 @@
             </div>
             <div class="info-group">
                 <label>✈️ 飛機：</label>
-                <input type="text" id="aircraft-input" placeholder="例: B-12345" autocomplete="off">
+                <span class="prefix-text">N-</span>
+                <input type="text" id="aircraft-input" placeholder="例: 12345" autocomplete="off" style="width: 100px;">
             </div>
             <div class="info-group">
                 <label>🆔 航班號：</label>
-                <input type="text" id="flight-input" placeholder="例: UA871" autocomplete="off">
+                <span class="prefix-text">UA-</span>
+                <input type="text" id="flight-input" placeholder="例: 871" autocomplete="off" style="width: 100px;">
             </div>
             <button class="screenshot-btn" id="downloadScreenshotBtn">📸 下載截圖</button>
         </div>
 
-        <!-- 原表格（加油單核心內容）將被移動到此處，確保截圖完整 -->
+        <!-- 原表格（加油單核心內容）-->
         <table id="fuelTable">
-            <tr>
+             <tr>
                 <td colspan="9" class="title">聯合航空加油單計算</td>
-            </tr>
-            <tr>
+             </tr>
+             <tr>
                 <td colspan="9" class="subtitle">UNITED AIRLINES ROUTINE FUEL SERVICE FORM</td>
-            </tr>
-            <tr>
+             </tr>
+             <tr>
                 <td colspan="9" class="subtitle">DISPATCH REQUESTED LOAD</td>
-            </tr>
-            <tr>
+             </tr>
+             <tr>
                 <td colspan="9" class="section-title">FUEL DISTRIBUTION (LBS)</td>
-            </tr>
+             </tr>
             <tr class="fuel-distribution">
                 <td class="chinese-note"></td>
                 <td>TANK</td>
@@ -811,7 +825,6 @@
     async function downloadScreenshot() {
         const screenshotBtn = document.getElementById('downloadScreenshotBtn');
         if (!screenshotBtn) return;
-        // 暫時隱藏截圖按鈕，使畫面乾淨
         screenshotBtn.style.visibility = 'hidden';
         const targetElement = document.getElementById('screenshot-area');
         if (!targetElement) { screenshotBtn.style.visibility = 'visible'; return; }
@@ -883,15 +896,12 @@
         updateCurrentDate();
     }
 
-    // 確保表格已存在於 screenshot-area 內 (已經在HTML中直接置入，無需移動)
-    // 但為避免雙重移動，直接初始化即可
     document.addEventListener('DOMContentLoaded', () => {
         initEmployeeSelect();
         bindEventsAndRestore();
-        // 監聽飛機航班輸入框不會影響計算，但截圖時會自動記錄內容
-        setInterval(updateCurrentDate, 60000); // 每分鐘同步日期
+        setInterval(updateCurrentDate, 60000);
         updateCurrentDate();
     });
 </script>
 </body>
-</html>
+                                                                                       </html>
