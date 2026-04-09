@@ -277,6 +277,7 @@
         }
         .red-text {
             color: red;
+            font-weight: bold;
         }
         .flight-info-panel {
             background-color: #f9f9f9;
@@ -351,7 +352,6 @@
         .blink-red {
             animation: blinkBackground 1s infinite;
         }
-        /* 計算結果行：正常綠色背景 */
         .comparison-row {
             background-color: #d9ead3 !important;
             font-weight: bold;
@@ -359,7 +359,6 @@
             padding: 10px;
             white-space: pre-line;
         }
-        /* 閃爍時覆蓋背景 */
         .comparison-row.blink-red {
             background-color: #ffcccc !important;
             animation: blinkBackground 1s infinite;
@@ -390,6 +389,104 @@
         }
         .employee-input-row {
             background-color: #ffcccc;
+        }
+
+        /* 後推程序專用樣式 - 地面整句黃底黑字，獨立成塊 */
+        .ground-line {
+            background-color: #ffeb3b;  /* 鮮明黃色背景 */
+            font-weight: bold;
+            color: black;
+            padding: 6px 12px;
+            border-radius: 20px;
+            margin: 8px 0;
+            display: block;   /* 確保每個都是獨立塊，不並排 */
+            width: fit-content;
+            max-width: 100%;
+            line-height: 1.4;
+        }
+        .ground-line .red-text {
+            color: red;
+            font-weight: bold;
+        }
+        .flightdeck-line {
+            background-color: #eef2fa;
+            padding: 4px 12px;
+            border-radius: 16px;
+            margin: 6px 0;
+            display: inline-block;
+            font-weight: normal;
+        }
+        .translation {
+            font-size: 13px;
+            color: #444;
+            font-style: italic;
+            margin-left: 28px;
+            margin-top: 2px;
+            margin-bottom: 12px;
+            padding-left: 6px;
+            border-left: 3px solid #ccc;
+        }
+        .procedure-section {
+            margin-bottom: 28px;
+        }
+        .procedure-section h4 {
+            font-size: 18px;
+            font-weight: bold;
+            background: #f0f4fa;
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 12px 0 12px 0;
+        }
+        .pushback-procedure {
+            margin-top: 30px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 20px 24px;
+            border-top: 4px solid #0033a0;
+        }
+        .pushback-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 18px;
+            color: #0033a0;
+            border-left: 5px solid #ffcc00;
+            padding-left: 15px;
+        }
+        .concept-block {
+            background-color: #f9f9ef;
+            padding: 14px 20px;
+            border-radius: 14px;
+            margin-top: 20px;
+            border-left: 6px solid #ffaa33;
+        }
+        .concept-block p {
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+        .ground-chinese-line {
+            background-color: #ffeb3b;
+            font-weight: bold;
+            color: black;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin: 6px 0;
+            display: inline-block;
+            width: auto;
+            max-width: 100%;
+        }
+        .special-note {
+            background: #fff1e0;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin: 15px 0 5px;
+            font-weight: 500;
+            border-left: 4px solid #e67e22;
+        }
+        .small-note {
+            font-size: 13px;
+            color: #333;
         }
     </style>
 </head>
@@ -507,6 +604,93 @@
             <tr class="blue-row-normal"><td colspan="9"></td></tr>
             <tr class="remarks-row"><td class="blue-left" colspan="9">REMARKS :</td></tr>
         </table>
+
+        <!-- ========= 後推程序 (完全獨立成行，地面每句黃底塊) ========= -->
+        <div class="pushback-procedure">
+            <div class="pushback-title">UA 後推程序 (標準拖桿正常後推通話)</div>
+            
+            <!-- 1. Prior to aircraft connected -->
+            <div class="procedure-section">
+                <h4>▶ 飛機連接前 (Prior to aircraft connected)</h4>
+                <div class="ground-line">Ground: "Ground to flight deck, set brakes."</div>
+                <div class="translation">地面： 「地面呼叫駕駛艙，設定煞車。」</div>
+                <div class="flightdeck-line">Flight deck: "Brakes set."</div>
+                <div class="translation">駕駛艙： 「煞車已設定。」</div>
+            </div>
+
+            <!-- 2. When ready for push back -->
+            <div class="procedure-section">
+                <h4>▶ 準備後推時 (When ready for push back)</h4>
+                <div class="ground-line">Ground: "Ground to flight deck, ready for push back and brake release."</div>
+                <div class="translation">地面： 「地面呼叫駕駛艙，準備好後推及解除煞車。」</div>
+                <div class="flightdeck-line">Flight deck (若不 ready): "Stand by."</div>
+                <div class="translation">駕駛艙 (未準備好): 「稍後。」</div>
+                <div class="flightdeck-line">Flight deck (若 ready): "Brakes released, cleared to push."</div>
+                <div class="translation">駕駛艙 (準備好): 「煞車已解除，可以後推。」</div>
+                <div class="ground-line">Ground: "Cleared to push."</div>
+                <div class="translation">地面： 「收到，可以後推。」</div>
+            </div>
+
+            <!-- 3. When safe to start engine(s) -->
+            <div class="procedure-section">
+                <h4>▶ 安全啟動發動機時 (When safe to start engine(s))</h4>
+                <div class="ground-line">Ground: "Cleared to start engine(s)."</div>
+                <div class="translation">地面： 「可以啟動發動機。」</div>
+                <div class="flightdeck-line">Flight deck: "Cleared to start engine(s)."</div>
+                <div class="translation">駕駛艙： 「收到，啟動發動機。」</div>
+            </div>
+
+            <!-- 4. End of push back (每句地面獨立成行，無並排) -->
+            <div class="procedure-section">
+                <h4>▶ 後推結束 (End of push back)</h4>
+                <div class="ground-line">Ground: "Set brakes."</div>
+                <div class="translation">地面： 「設定煞車。」</div>
+                <div class="flightdeck-line">Flight deck: "Parking brake set [pressure normal.]" <span style="font-size:12px;">(B737/A320 only)</span></div>
+                <div class="translation">駕駛艙： 「停機煞車已設定 [壓力正常]。」</div>
+                <div class="ground-line">Ground: "Brakes set."</div>
+                <div class="translation">地面： 「煞車已設定。」</div>
+            </div>
+
+            <!-- 5. After towbar and bypass pin are removed (包含紅色重點句) -->
+            <div class="procedure-section">
+                <h4>▶ 拖桿及旁通銷移除後 (After towbar and bypass pin are removed)</h4>
+                <div class="ground-line"><span class="red-text">Ground: "Aircraft disconnected, bypass pin removed."</span></div>
+                <div class="translation"><span class="red-text">地面： 「飛機已斷開，旁通銷已移除。」</span></div>
+                <div class="flightdeck-line">Flight deck: "Disconnect headset."</div>
+                <div class="translation">駕駛艙： 「耳機可斷開。」</div>
+                <div class="ground-line">Ground: "Disconnecting headset." <span class="small-note">(若有延遲，應說 "Stand by" 並說明原因)</span></div>
+                <div class="translation">地面： 「耳機斷開中。」 (如遇延遲，請說「稍後」並告知原因)</div>
+            </div>
+
+            <!-- 概念說明區塊 (地面人員中文對話黃底) -->
+            <div class="concept-block">
+                <p><strong>✈ 概念：正面：刹車解除程序</strong></p>
+                <p><strong>指令 (Command)：</strong><br>
+                <span class="ground-chinese-line">地面人員： 「地面呼叫駕駛艙，已準備好解除刹車並進行後推。」</span><br>
+                (Ground to flight deck, ready for brake release and pushback.)</p>
+                <p><strong>注意：</strong> 刹車解除後，若因任何原因需要離開後推車，必須在離開車輛前與駕駛艙確認已拉上刹車。</p>
+                <p><strong>回應 (Responses)：</strong><br>
+                1. 若駕駛艙尚未準備好解除刹車：<br>
+                ✈ 駕駛艙將回應： 「稍後（Stand by）。」<br>
+                ➤ 這代表什麼？ 刹車將保持鎖定狀態。<br>
+                <span class="ground-chinese-line">地面人員將回應： 「收到，稍後（Standing by）。」</span></p>
+                <p>2. 若駕駛艙「已準備好」解除刹車，但「尚未準備好」後推：<br>
+                ✈ 駕駛艙將回應： 「刹車已解除，稍後。」<br>
+                ➤ 這代表什麼？ 刹車已放開，但駕駛艙正在等待後推許可。<br>
+                <span class="ground-chinese-line">地面人員將回應： 「刹車已解除，稍後。」</span><br>
+                <span class="small-note">*參閱下方附註</span></p>
+                <p>3. 若駕駛艙「已準備好」解除刹車，「且已準備好」後推：<br>
+                ✈ 駕駛艙將回應： 「刹車已解除，可以後推。」<br>
+                <span class="ground-chinese-line">地面人員將回應： 「刹車已解除，可以後推。」</span><br>
+                <span class="small-note">*參閱下方附註</span></p>
+                <p><strong>附註 (Note)：</strong><br>
+                若使用 Lektro（無桿拖車），請記得在進行抬升與鎖定（lift and capture）前，與駕駛艙進行面對面簡報，或使用耳機通話，以再次確認將使用 Lektro 系統。</p>
+                <div class="special-note">
+                    ⚠️ 如果臨時拖桿故障都無拖桿可用，要用螃蟹車，務必後推前要告知機長！
+                </div>
+            </div>
+            <div style="font-size:12px; color:#666; margin-top:12px; text-align:right;">RSM4559 / RSM 05-01-01 Rev. Jan 2019</div>
+        </div>
     </div>
 </div>
 
@@ -617,7 +801,8 @@
 
     function calculateFuelTime() {
         calculateAll();
-        const p = parseFloat(document.getElementById('pounds-to-add').textContent.replace(/,/g,''))||0;
+        const pText = document.getElementById('pounds-to-add').textContent.replace(/,/g,'');
+        const p = parseFloat(pText)||0;
         if(p<=0){ document.getElementById('estimated-time').textContent="請先輸入正確的油量數據"; return; }
         const minutes = p/920;
         const end = new Date(Date.now()+minutes*60000);
