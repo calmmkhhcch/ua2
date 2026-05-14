@@ -391,7 +391,7 @@
             background-color: #ffcccc;
         }
 
-        /* 後推程序專用樣式 - 地面整句黃底黑字，獨立成塊 */
+        /* 後推程序專用樣式（僅供頁面參考，不影響截圖） */
         .ground-line {
             background-color: #ffeb3b;
             font-weight: bold;
@@ -488,6 +488,11 @@
             font-size: 13px;
             color: #333;
         }
+        /* 確保截圖區域完整顯示 */
+        #screenshot-area {
+            overflow: visible !important;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -520,7 +525,7 @@
         <div class="fuel-estimation">加油結束預估時間：<span id="estimated-time">尚未計算</span></div>
     </div>
 
-    <!-- 截圖目標區域（不包含後推程序） -->
+    <!-- 截圖目標區域：完整包含日期面板 + 整張油單表格（直到 REMARKS 列） -->
     <div id="screenshot-area">
         <!-- 資訊列：日期、飛機(N-)、航班號(UA-) -->
         <div class="flight-info-panel">
@@ -541,14 +546,14 @@
             <button class="screenshot-btn" id="downloadScreenshotBtn">📸 下載截圖</button>
         </div>
 
-        <!-- 加油單表格 -->
+        <!-- 加油單表格（完整直到 REMARKS 行） -->
         <table>
-            <tr><td colspan="9" class="title">聯合航空加油單計算</th>
-            <tr><td colspan="9" class="subtitle">UNITED AIRLINES ROUTINE FUEL SERVICE FORM</th>
-            <tr><td colspan="9" class="subtitle">DISPATCH REQUESTED LOAD</th>
-            <tr><td colspan="9" class="section-title">FUEL DISTRIBUTION (LBS)</th>
+            <tr><td colspan="9" class="title">聯合航空加油單計算</td></tr>
+            <tr><td colspan="9" class="subtitle">UNITED AIRLINES ROUTINE FUEL SERVICE FORM</td></tr>
+            <tr><td colspan="9" class="subtitle">DISPATCH REQUESTED LOAD</td></tr>
+            <tr><td colspan="9" class="section-title">FUEL DISTRIBUTION (LBS)</td></tr>
             <tr class="fuel-distribution">
-                <td class="chinese-note"></td>
+                <td class="chinese-note"> </td>
                 <td>TANK</td>
                 <td>BEFORE</td>
                 <td>DESIRED</td>
@@ -636,11 +641,9 @@
         </table>
     </div>
 
-    <!-- ========= 後推程序 (已移至截圖區域外，不影響截圖內容) ========= -->
+    <!-- ========= 後推程序 (完全置於截圖區域外，不影響截圖) ========= -->
     <div class="pushback-procedure">
         <div class="pushback-title">UA 後推程序 (標準拖桿正常後推通話)</div>
-        
-        <!-- 1. Prior to aircraft connected -->
         <div class="procedure-section">
             <h4>▶ 飛機連接前 (Prior to aircraft connected)</h4>
             <div class="ground-line">Ground: "Ground to flight deck, set brakes."</div>
@@ -648,8 +651,6 @@
             <div class="flightdeck-line">Flight deck: "Brakes set."</div>
             <div class="translation">駕駛艙： 「煞車已設定。」</div>
         </div>
-
-        <!-- 2. When ready for push back -->
         <div class="procedure-section">
             <h4>▶ 準備後推時 (When ready for push back)</h4>
             <div class="ground-line">Ground: "Ground to flight deck, ready for push back and brake release."</div>
@@ -661,8 +662,6 @@
             <div class="ground-line">Ground: "Cleared to push."</div>
             <div class="translation">地面： 「收到，可以後推。」</div>
         </div>
-
-        <!-- 3. When safe to start engine(s) -->
         <div class="procedure-section">
             <h4>▶ 安全啟動發動機時 (When safe to start engine(s))</h4>
             <div class="ground-line">Ground: "Cleared to start engine(s)."</div>
@@ -670,8 +669,6 @@
             <div class="flightdeck-line">Flight deck: "Cleared to start engine(s)."</div>
             <div class="translation">駕駛艙： 「收到，啟動發動機。」</div>
         </div>
-
-        <!-- 4. End of push back -->
         <div class="procedure-section">
             <h4>▶ 後推結束 (End of push back)</h4>
             <div class="ground-line">Ground: "Set brakes."</div>
@@ -681,8 +678,6 @@
             <div class="ground-line">Ground: "Brakes set."</div>
             <div class="translation">地面： 「煞車已設定。」</div>
         </div>
-
-        <!-- 5. After towbar and bypass pin are removed -->
         <div class="procedure-section">
             <h4>▶ 拖桿及旁通銷移除後 (After towbar and bypass pin are removed)</h4>
             <div class="ground-line"><span class="red-text">Ground: "Aircraft disconnected, bypass pin removed."</span></div>
@@ -692,7 +687,6 @@
             <div class="ground-line">Ground: "Disconnecting headset." <span class="small-note">(若有延遲，應說 "Stand by" 並說明原因)</span></div>
             <div class="translation">地面： 「耳機斷開中。」 (如遇延遲，請說「稍後」並告知原因)</div>
         </div>
-
         <div class="concept-block">
             <p><strong>✈ 概念：正面：刹車解除程序</strong></p>
             <p><strong>指令 (Command)：</strong><br>
@@ -741,7 +735,6 @@
         '648281': { englishName: 'KUAN-HSUN CHEN', employeeId: 'V952768' },
         '638361': { englishName: 'CHEN CHIH WAN', employeeId: 'V951812' },
         '642358': { englishName: 'YUAN-CHENG YOU', employeeId: 'V952850' },
-        // 新增四位加油人員
         '648349': { englishName: 'CHENG, HSU-HSUAN', employeeId: 'V952849' },
         '649325': { englishName: 'CHUANG, YU-CHENG', employeeId: 'V952848' },
         '648445': { englishName: 'SU, BING-HAO', employeeId: 'V952853' },
@@ -808,7 +801,6 @@
             document.getElementById('calc-gals-plus').textContent = msg;
             document.getElementById('gals-plus-liters').textContent = msg;
         }
-
         const compCell = document.getElementById('comparison-result');
         compCell.classList.remove('blink-red');
         if (hasRequired && hasReceipt) {
@@ -871,15 +863,46 @@
         btn.style.visibility = 'hidden';
         const area = document.getElementById('screenshot-area');
         if(!area){ btn.style.visibility='visible'; return; }
-        try{
-            const canvas = await html2canvas(area, { scale:2.5, backgroundColor:'#ffffff', logging:false });
+        try {
+            // 保存原始樣式
+            const originalOverflow = area.style.overflow;
+            area.style.overflow = 'visible';
+            // 獲取父容器並暫時解除可能限制滾動的屬性
+            const container = document.querySelector('.container');
+            const originalContainerOverflow = container ? container.style.overflowX : null;
+            if (container) container.style.overflowX = 'visible';
+            // 強制重新計算佈局
+            area.style.display = 'block';
+            const rect = area.getBoundingClientRect();
+            const canvas = await html2canvas(area, {
+                scale: 2.8,
+                backgroundColor: '#ffffff',
+                logging: false,
+                useCORS: true,
+                allowTaint: false,
+                windowWidth: area.scrollWidth,
+                windowHeight: area.scrollHeight,
+                x: 0,
+                y: 0,
+                width: area.scrollWidth,
+                height: area.scrollHeight
+            });
+            // 恢復樣式
+            area.style.overflow = originalOverflow;
+            if (container && originalContainerOverflow !== null) container.style.overflowX = originalContainerOverflow;
+            else if (container) container.style.overflowX = 'auto';
             const link = document.createElement('a');
             const now = new Date();
             const ds = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}`;
             link.download = `加油單_${ds}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
-        }catch(e){ alert('截圖失敗'); } finally{ btn.style.visibility='visible'; }
+        } catch(e) { 
+            console.error(e);
+            alert('截圖失敗，請稍後重試。'); 
+        } finally { 
+            btn.style.visibility = 'visible'; 
+        }
     }
 
     function init() {
@@ -907,7 +930,7 @@
         });
         calculateAll();
     }
-    document.addEventListener('DOMContentLoaded',init);
+    document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
