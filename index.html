@@ -762,7 +762,7 @@
         const actualLiters = r1+r2+r3;
         const beforeTotal = lwingB+centerB+rwingB;
         const afterTotal = lwingA+centerA+rwingA;
-        const poundsToAdd = planned - beforeTotal;
+        const poundsToAdd = afterTotal - beforeTotal;
         const calcGallons = density>0 ? poundsToAdd/density : 0;
         const litersToGals = actualLiters/3.78541;
         const subtractGallons = Math.round(litersToGals);
